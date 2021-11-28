@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static%}
+{% block title %} Managers {% endblock %}
+{% block content%}
+<br><br>
+<div class="fs-1 fw-bolder"> Managers </div>
+<br><br>
+    <table class="table">
+  <thead>
+    <tr class="table-secondary">
+      <th scope="col">Employee Id</th>
+      <th scope="col">Employee Name</th>
+      <th scope="col">Manager Status</th>
+      <th scope="col">Add/ Remove Manger</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for employee in employees %}
+    <tr>
+    <th scope="row">{{employee.empid}}</th>
+    <td>{{employee.firstname}} {{employee.lastname}}</td>
+    {% if employee.ismanager == 1 %}<td>Yes</td>
+    {% else %} <td>No</td>
+    {% endif %}
+     {% csrf_token %}
+    {% if employee.ismanager == 1 %} <td><button onClick="remove_dialog(this.id)" class="btn btn-danger" id="r{{employee.empid}}" >Remove Manager</button></td>
+    {% else %} <td><button onClick="make_dialog(this.id)" class="btn btn-success" id="m{{employee.empid}}" >Make Manager</button></td>
+    {% endif %}
+    </tr>
+    
+    {% endfor %}
+     </tbody>
+    </table>
+
+
+    <div class="modal" id="make" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Warning</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to make employee with emp id: <span id="idmake"></span> a manager ?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" id='btn-make' onclick="makemanager()">Yes</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="modal" id="remove" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Warning</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to revoke manager status of employee with emp id: <span id="idremove"></span> ?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id='btn-delete' onclick="removemanager()">Yes</button>
+                    <button type="button" class="btn btn-success" data-dismiss="modal">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+ function remove_dialog(id){
+        id = Number(id.substr(1));
+        document.getElementById('idremove').innerText = id ;
+        $('#remove').modal();
+    }
+  
+  function make_dialog(id){
+        id = Number(id.substr(1));
+        document.getElementById('idmake').innerText = id ;
+        $('#make').modal();
+  }
+
+  function makemanager(){
+        var req_data = {
+            id: Number(document.getElementById('idmake').innerText),
+            flag: 0,
+        }
+
+        $.ajax({
+            url: "{% url 'managers' %}",
+            method: "POST",
+            data: req_data,
+            success: function (data, status, xhr) {
+                window.location.reload();
+            },
+            error: function (xhr, status, err) {
+                window.location.reload();
+            }
+        });
+    }
+
+
+    function removemanager() {
+        var req_data = {
+            id: Number(document.getElementById('idremove').innerText),
+            flag: 1,
+        }
+
+        $.ajax({
+            url: "{% url 'managers' %}",
+            method: "POST",
+            data: req_data,
+            success: function (data, status, xhr) {
+                window.location.reload();
+            },
+            error: function (xhr, status, err) {
+                window.location.reload();
+            }
+        });
+    }
+</script>
+{% endblock %}

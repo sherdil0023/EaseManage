@@ -1,0 +1,244 @@
+{% extends 'base.html' %} {% load static %} {% block title %} Profile Details {% endblock %} {% block content %} <br /><br />
+<div class="fs-1 fw-bolder">Profile Details</div>
+<br />
+<form class="form-inline" onsubmit="return False">
+  <div class="form-group">
+    <label>First Name</label>
+    &nbsp;
+    <input
+      type="text"
+      id="1"
+      class="form-control"
+      disabled
+      value="{{employee.firstname}}"
+    />
+    &nbsp;&nbsp;&nbsp;
+    <button
+      type="button"
+      onClick="showModal(this.id)"
+      class="btn btn-primary"
+      id="e1"
+    >
+      Edit
+    </button>
+  </div>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <div class="form-group">
+    <label>Last Name</label>
+    &nbsp;
+    <input
+      type="text"
+      id="2"
+      class="form-control"
+      disabled
+      value="{{employee.lastname}}"
+    />
+    &nbsp;&nbsp;&nbsp;
+    <button
+      type="button"
+      onClick="showModal(this.id)"
+      class="btn btn-primary"
+      id="e2"
+    >
+      Edit
+    </button>
+  </div>
+</form>
+<form>
+  <br />
+  <div class="form-group row g-3">
+    <div class="col-auto">
+      <label for="managerstat" class="col-form-label">Manager Status</label>
+    </div>
+    <div class="col-auto">
+      {% if ismanager == 1 %}
+      <input
+        type="text"
+        disabled
+        id="managerstat"
+        class="form-control"
+        value="Yes"
+      />
+      {% else %}
+      <input
+        type="text"
+        disabled
+        id="managerstat"
+        class="form-control"
+        value="No"
+      />
+      {% endif %}
+    </div>
+  </div>
+  <div class="form-group row g-3">
+    <div class="col-auto">
+      <label for="managerstat" class="col-form-label">Employee Id</label>
+    </div>
+    <div class="col-auto">
+      <input
+        type="text"
+        disabled
+        id="managerstat"
+        class="form-control"
+        value="{{employee.empid}}"
+      />
+    </div>
+  </div>
+  <div class="form-group row g-3">
+    <div class="col-auto">
+      <label for="managerstat" class="col-form-label">Date Joined</label>
+    </div>
+    <div class="col-auto">
+      <input
+        type="text"
+        disabled
+        id="managerstat"
+        class="form-control"
+        value="{{request.user.date_joined}}"
+      />
+    </div>
+  </div>
+  <div class="form-group row g-3">
+    <div class="col-auto">
+      <label for="3" class="col-form-label">Email</label>
+    </div>
+    <div class="col-auto">
+      <input
+        type="email"
+        disabled
+        id="3"
+        value="{{employee.email}}"
+        class="form-control"
+      />
+    </div>
+    <div class="col-auto">
+      <button
+        type="button"
+        onClick="showModal(this.id)"
+        class="btn btn-primary"
+        id="e3"
+      >
+        Edit
+      </button>
+    </div>
+  </div>
+
+  {% csrf_token %}
+  <div class="form-group">
+    <label>Update Password</label>
+    &nbsp;
+    <button
+      type="button"
+      onClick="showchngpwd()"
+      id="pwd"
+      class="btn btn-primary"
+    >
+      Change Password
+    </button>
+  </div>
+</form>
+
+<div id="updateModal" class="modal" role="dialog"></div>
+<div id="changepwdModal" class="modal" role="dialog"></div>
+
+{% endblock %} {% block scripts %}
+<script>
+  function showchngpwd() {
+    document.getElementById("changepwdModal").innerHTML = `
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Update Password</h5>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <form onsubmit=" return changepassword()">
+
+                            <div class="form-group">
+                                <label for="editcontainerpwd">Enter New Password</label>
+                                <input type="password" id="editcontainerpwd" class="form-control">
+                            </div>
+                            
+                        </form>
+                    </div>
+                    <div class="modal-footer">                        
+                        <button type="button" onClick="changepassword()" class="btn btn-primary">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    $("#changepwdModal").modal();
+  }
+  function showModal(id) {
+    id = Number(id.substr(1));
+    var content;
+    if (id == "1") content = "First Name";
+    else if (id == "2") content = "Last Name";
+    else content = "Email Address";
+    document.getElementById("updateModal").innerHTML = `
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Update Details</h5>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <form onsubmit=" return EditDet(${id})">
+
+                            <div class="form-group">
+                                <label for="editcontainer">${content}</label>
+                                <input type="text" id="editcontainer" class="form-control" value="${
+                                  document.getElementById(id).value
+                                }">
+                            </div>
+                            
+                        </form>
+                    </div>
+                    <div class="modal-footer">                        
+                        <button type="button" onClick="EditDet(${id})" class="btn btn-primary">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    $("#updateModal").modal();
+  }
+  function EditDet(flag) {
+    var req_data = {
+      value: document.getElementById("editcontainer").value,
+      flag: flag,
+    };
+
+    $.ajax({
+      url: "{% url 'profilepage' %}",
+      method: "POST",
+      data: req_data,
+      success: function (data, status, xhr) {
+        window.location.reload();
+      },
+      error: function (xhr, status, err) {
+        window.location.reload();
+      },
+    });
+    return false;
+  }
+  function changepassword() {
+    var new_pwd = document.getElementById("editcontainerpwd").value;
+    var req_data = {
+      pwd: new_pwd,
+      flag: 4,
+    };
+    $.ajax({
+      url: "{% url 'profilepage' %}",
+      method: "POST",
+      data: req_data,
+      success: function (data, status, xhr) {
+        window.location.href = "{% url 'index' %}";
+      },
+      error: function (xhr, status, err) {
+        console.log("Error");
+      },
+    });
+    return false;
+  }
+</script>
+{% endblock %}

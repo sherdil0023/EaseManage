@@ -1,0 +1,160 @@
+{% extends 'base.html' %} {% load static %} {% block title %} My Created Teams
+{% endblock %} {% block content %}
+<br />
+<div class="fs-1 fw-bolder">My Created Teams</div>
+<br /><br />
+<table class="table">
+  <thead>
+    <tr class="table-secondary">
+      <th scope="col">Team Id</th>
+      <th scope="col">Team Name</th>
+      <th scope="col">Edit</th>
+      <th scope="col">Delete</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for teammember in team %}
+    <tr>
+      <th scope="row">{{teammember.teamid}}</th>
+      <td>{{teammember.teamname}}</td>
+      <td>
+        <button
+          onClick="showModal(this.id)"
+          class="btn btn-primary {{teammember.teamid}}"
+          id="e{{forloop.counter}}"
+        >
+          Edit
+        </button>
+      </td>
+      <td>
+        <button
+          onClick="delete_dialog(this.id)"
+          class="btn btn-danger {{teammember.teamid}}"
+          id="d{{forloop.counter}}"
+        >
+          Delete
+        </button>
+      </td>
+    </tr>
+
+    {% endfor %}
+  </tbody>
+</table>
+<div id="updateModal" class="modal" role="dialog"></div>
+<div class="modal" id="confirm" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Warning</h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>
+          Are you sure you want to delete the Team with Id:
+          <span id="title"></span>?
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-danger"
+          id="btn-delete"
+          onclick="DeleteTeam()"
+        >
+          Yes
+        </button>
+        <button type="button" class="btn btn-success" data-dismiss="modal">
+          No
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %} {% block scripts %}
+<script>
+      {% if team_json %}
+      let teams = {{ team_json | safe }};
+      {% endif %}
+  function showModal(id) {
+          id = Number(id.substr(1));
+          document.getElementById('updateModal').innerHTML = `
+              <div class="modal-dialog modal-dialog-centered" role="document">
+                  <div class="modal-content">
+                      <div class="modal-header">
+                          <h3 class="modal-title">Update Team Details</h5>
+                          <button type="button" class="close" data-dismiss="modal">&times;</button>
+                      </div>
+                      <div class="modal-body">
+                          <form onsubmit=" return EditTeam()">
+                              <div class="form-group">
+                                  <label for="teamid">Team Id</label>
+                                  <input type="text" id="teamid" class="form-control" disabled value="${teams[id-1][1]}">
+                              </div>
+                              <div class="form-group">
+                                  <label for="teamname">Team's Name</label>
+                                  <input type="text" id="teamname" class="form-control" value="${teams[id-1][0]}">
+                              </div>
+
+                          </form>
+                      </div>
+                      <div class="modal-footer">
+                          <button type="button" onClick="EditTeam();" class="btn btn-primary">Save changes</button>
+                      </div>
+                  </div>
+              </div>
+          `;
+          $('#updateModal').modal()
+      }
+      function EditTeam() {
+          var req_data = {
+              teamname: `${document.getElementById('teamname').value}`,
+              teamid: Number(document.getElementById('teamid').value),
+
+          }
+
+          $.ajax({
+              url: "{% url 'editteam' %}",
+              method: "POST",
+              data: req_data,
+              success: function (data, status, xhr) {
+                  return false;
+                  window.location.reload();
+              },
+              error: function (xhr, status, err) {
+                  window.location.reload();
+              }
+          });
+          return false;
+      }
+      function delete_dialog(id){
+          id = Number(id.substr(1));
+          document.getElementById('title').innerText = teams[id-1][1] ;
+          $('#confirm').modal();
+      }
+      function DeleteTeam() {
+          var req_data = {
+              teamid: Number(document.getElementById('title').innerText),
+          }
+
+          $.ajax({
+              url: "{% url 'deleteteam' %}",
+              method: "POST",
+              data: req_data,
+              success: function (data, status, xhr) {
+                  window.location.reload();
+              },
+              error: function (xhr, status, err) {
+                  window.location.reload();
+              }
+          });
+      }
+</script>
+{% endblock %}

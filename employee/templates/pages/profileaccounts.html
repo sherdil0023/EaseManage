@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} Account Details {% endblock %}
+{% block content %}
+<br>
+<div class="fs-1 fw-bolder"> Account Details </div>
+<br><br>
+                        <form onsubmit="return False">
+                            <div class="form-group">
+                                <label >Account Id</label>
+                                <input type="text" id="1" class="form-control" disabled value="{{acc_det.Account_Id}}"/>
+                                <br>
+                                <button type="button" onClick="showModal(this.id)" class="btn btn-primary" id="e1">Edit</button>
+                            </div>
+                            <div class="form-group">
+                                <label >IFSC Code</label>
+                                <input type="text" id="2" class="form-control" disabled value="{{acc_det.IFSC_Code}}"/>
+                                <br>
+                                <button type="button" onClick="showModal(this.id)" class="btn btn-primary" id="e2">Edit</button>
+                            </div>
+                            <div class="form-group">
+                                <label >Account Name</label>
+                                <input type="text" id="3" class="form-control" disabled value="{{acc_det.Account_Name}}"/>
+                                <br>
+                                <button type="button" onClick="showModal(this.id)" class="btn btn-primary" id="e3">Edit</button>
+                            </div>
+                           <!--<div class="form-group">
+                                <label>Monthly Income</label>
+                                <input type="number" id="monthly_income" class="form-control" disabled value="{{details.monthly_income}}"/>
+                            </div>
+                            <div class="form-group">
+                                <label>Yearly Bonus</label>
+                                <input type="number" id="yearly_bonus" class="form-control" disabled value="{{details.yearly_bonus}}"/>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Accomodation</label>
+                                <input type="number" id="accomodation" class="form-control" disabled value="{{details.accomodation}}"/>
+                            </div>--> 
+                            
+                        </form>
+                    
+
+              <div id="updateModal" class="modal" role="dialog"></div>
+                
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+function showModal(id) {
+    
+        id = Number(id.substr(1));
+        var content;
+        if(id=="1") content="Account Id";
+        else if(id=="2") content="IFSC Code";
+        else content= "Account Name";
+        document.getElementById('updateModal').innerHTML = `
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Update Details</h5>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <form onsubmit=" return EditDet(${id})">
+
+                            <div class="form-group">
+                                <label for="editcontainer">${content}</label>
+                                <input type="text" id="editcontainer" class="form-control" value="${document.getElementById(id).value}">
+                            </div>
+                            
+                        </form>
+                    </div>
+                    <div class="modal-footer">                        
+                        <button type="button" onClick="EditDet(${id})" class="btn btn-primary">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        $('#updateModal').modal();
+    }
+function EditDet(flag) {
+        var req_data = {
+            value: document.getElementById('editcontainer').value,
+            flag: flag,
+        }
+        console.log(flag);
+        if(flag==1){
+            var pattern=/[^0-9]/g;
+            if(req_data.value.length<10 || req_data.value.length>10) {alert("Account Number Must Have 10 Digits !");return;}
+            
+            let matched = req_data.value.match(pattern);
+            console.log(matched);
+            if(matched!=null){
+            if(matched.length>0){
+                alert("Account Number Must Be of 10 digits and consist of digits 0-9 only");
+                return false;
+            }
+        } 
+
+        }
+        else if(flag==2){
+            if(req_data.value.length<11 || req_data.value.length>11) {alert("IFSC Code Must be of 11 Alpha-Numeric characters");return;}
+            else{
+                var pattern=/[0-9a-zA-Z]/g;
+                let matched = req_data.value.match(pattern);
+                if(matched.length!=11) {alert("IFSC Code must be Alpha-Numeric only");return false;}
+            }
+        }
+        else{
+            if(req_data.value=="") {alert("Account Name Cannot Be Empty ! !");return false;} 
+        }
+        $.ajax({
+            url: "{% url 'profilesalary' %}",
+            method: "POST",
+            data: req_data,
+            success: function (data, status, xhr) {
+                window.location.reload();
+                
+            },
+            error: function (xhr, status, err) {
+                window.location.reload();
+            }
+        });
+        return false;
+    }
+</script>
+{% endblock %}

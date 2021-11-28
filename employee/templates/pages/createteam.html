@@ -1,0 +1,46 @@
+{% extends 'base.html' %} {% load static %} {% block title %} Create Team {% endblock %} {% block content %} <br /><br /><br />
+<br />
+<div class="fs-1 fw-bolder">Create Team</div>
+<br /><br />
+<form onsubmit=" return CreateTeam()">
+  {% csrf_token %}
+  <div class="mb-3">
+    <label for="TeamName" class="form-label fw-bolder">Team Name</label>
+    <input
+      type="text"
+      class="form-control"
+      id="TeamName"
+      aria-describedby="emailHelp"
+      required
+    />
+    <div id="emailHelp" class="form-text">Enter The Name For The New Team</div>
+  </div>
+  <button type="button" onclick="CreateTeam()" class="btn btn-primary">
+    Submit
+  </button>
+</form>
+{% endblock %} {% block scripts %}
+<script>
+  function CreateTeam() {
+    var req_data = {
+      TeamName: `${document.getElementById("TeamName").value}`,
+    };
+
+    $.ajax({
+      url: "{% url 'createteam' %}",
+      method: "POST",
+      data: req_data,
+      success: function (data, status, xhr) {
+        //window.location.reload();
+        window.location.href = "{% url 'teamscreated' %}";
+        //window.location.reload();
+      },
+      error: function (xhr, status, err) {
+        console.log("No team");
+        //window.location.href = "{% url 'myteams' %}";
+      },
+    });
+    return false;
+  }
+</script>
+{% endblock %}

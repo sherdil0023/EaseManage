@@ -1,0 +1,56 @@
+{% extends 'base.html' %} {% block title %} My Attendance {% endblock %} {% block content %} <br /><br />
+<div class="fs-1 fw-bolder">My Attendance</div>
+<div id="piechart"></div>
+<a
+  class="btn btn-primary"
+  id="attendancebtn"
+  onclick="UpdateAttend()"
+  role="button"
+  >Mark Attendance</a
+>
+{% endblock %} {% block scripts %}
+<script
+  type="text/javascript"
+  src="https://www.gstatic.com/charts/loader.js"
+></script>
+<script type="text/javascript">
+  {% if daysattended_json %}
+  let attended = {{ daysattended_json | safe }};
+  {% endif %}
+  {% if dayspassed_json %}
+  let totaldays = {{ dayspassed_json | safe }};
+  {% endif %}
+    google.charts.load('current', {'packages':['corechart']});
+    google.charts.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+      var data = google.visualization.arrayToDataTable([
+        ['Days', 'Attended Or Not'],
+        ['Days Present', attended],
+        ['Days Absent',    totaldays-attended],
+      ]);
+
+      var options = {
+        title: 'My Attendance Report',
+        backgroundColor: '#e4e9f7',
+      };
+
+      var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+      chart.draw(data, options);
+    }
+</script>
+<script>
+  function UpdateAttend() {
+    $.ajax({
+      url: "{% url 'attendance' %}",
+      method: "POST",
+      success: function (data, status, xhr) {
+        window.location.reload();
+      },
+      error: function (xhr, status, err) {
+        window.location.reload();
+      },
+    });
+  }
+</script>
+{% endblock %}

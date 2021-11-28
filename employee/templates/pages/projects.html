@@ -1,0 +1,189 @@
+{% extends 'base.html' %} {% load static %} {% block title %} My Projects {% endblock %} {% block content%}
+<br />
+<div class="fs-1 fw-bolder">Projects</div>
+<br />
+{% if ismanager %}
+<button
+  type="button"
+  class="btn btn-success"
+  data-toggle="modal"
+  data-target="#exampleModal"
+>
+  Add New Project
+</button>
+<br /><br />
+{% endif %}
+<table class="table">
+  <thead>
+    <tr class="table-secondary">
+      <th scope="col">Project Id</th>
+      <th scope="col">Project Name</th>
+      <th scope="col">Project Description</th>
+      <th scope="col">Status</th>
+      <th scope="col">Team Id</th>
+      {% if ismanager %}
+      <th scope="col">Mark Done</th>
+      {% endif%}
+    </tr>
+  </thead>
+  <tbody>
+    {% for project in projects %} {% if project.Status == 0 %}
+    <tr class="table-danger">
+      {% else %}
+    </tr>
+    <tr class="table-success">
+      {% endif %}
+
+      <th scope="row">{{project.id}}</th>
+      <td>{{project.Name}}</td>
+      <td>{{project.Project_Description}}</td>
+      {% if project.Status == 0 %}
+      <td>Pending</td>
+      {% else %}
+      <td>Completed</td>
+      {% endif %}
+      <td>{{project.team.teamid}}</td>
+      {% if ismanager %}
+      <td>
+        {% if project.Status == 0 %}
+        <button
+          onClick="mark_done(this.id)"
+          class="btn btn-primary"
+          id="m{{project.id}}"
+        >
+          Mark Done
+        </button>
+
+        {% endif %}
+      </td>
+      {% endif %}
+    </tr>
+
+    {% endfor %}
+  </tbody>
+</table>
+
+<div
+  class="modal fade"
+  id="exampleModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="exampleModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Create New Project</h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form onsubmit=" return newproject()">
+          {% csrf_token %}
+          <div class="form-row align-items-center">
+            <div class="col-auto my-1">
+              <label for="inlineFormCustomSelect">Team Id</label>
+              <select
+                class="custom-select mr-sm-2"
+                id="inlineFormCustomSelect"
+                required
+              >
+                <option selected value="0">Choose...</option>
+                {% for team in teams %}
+                <option value="{{team.teamid}}">{{team.teamid}}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <label for="project_name">Project Name</label>
+          <input
+            type="text"
+            class="form-control mb-2 mr-sm-2"
+            id="project_name"
+            placeholder=""
+          />
+          <div class="form-group">
+            <label for="project_desc">Project Description</label>
+            <textarea
+              class="form-control"
+              id="project_desc"
+              rows="3"
+            ></textarea>
+          </div>
+
+          <div class="col-auto my-1">
+            <button
+              onclick="newproject()"
+              type="button"
+              class="btn btn-primary"
+            >
+              Create New Project
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  function newproject() {
+    var selected_team_id = document.getElementById("inlineFormCustomSelect");
+    var req_data = {
+      team_id: Number(
+        selected_team_id.options[selected_team_id.selectedIndex].value
+      ),
+      project_name: document.getElementById("project_name").value,
+      project_desc: document.getElementById("project_desc").value,
+      flag: 1,
+    };
+    if (
+      req_data.project_name == "" ||
+      req_data.project_desc == "" ||
+      req_data.team_id == 0
+    ) {
+      alert("Enter All Details ! ! !");
+      return false;
+    }
+    $.ajax({
+      url: "{% url 'projects' %}",
+      method: "POST",
+      data: req_data,
+      success: function (data, status, xhr) {
+        window.location.reload();
+      },
+      error: function (xhr, status, err) {
+        console.log("Error");
+      },
+    });
+    return false;
+  }
+
+  function mark_done(id) {
+    id = Number(id.substr(1));
+    req_data = {
+      id: id,
+      flag: 0,
+    };
+    $.ajax({
+      url: "{% url 'projects' %}",
+      method: "POST",
+      data: req_data,
+      success: function (data, status, xhr) {
+        window.location.reload();
+      },
+      error: function (xhr, status, err) {
+        console.log("Error");
+      },
+    });
+  }
+</script>
+{% endblock %}

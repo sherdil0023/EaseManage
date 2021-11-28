@@ -1,0 +1,73 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+.form-text{
+  color: white !important;
+}
+
+.card-title{
+  margin: auto;
+  text-align: center;
+}
+
+body {
+
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+
+}
+
+.center {
+  background: #336699;
+  border-radius: 20px;
+  top: 7vh;
+  left: 33vw;
+  right: 33vw;
+  position: absolute;
+  padding: 2vw;
+  color: white !important;
+}
+
+.login-form {
+  color: white;
+  font-weight: bold;
+  margin-left: 2.5vw;
+  margin-bottom: 2.5vw;
+  width: 25vw;
+}
+
+.logo {
+  width: 30vw;
+  height: 15vw;
+  padding: 0 ;
+}
+
+@media only screen and (max-width: 768px) {
+  .center {
+    top: 15vh;
+    left: 7vw;
+    right: 7vw;
+    padding: 4vw;
+  }
+  .login-form {
+    color: white;
+    font-weight: bold;
+    margin-left: 7.5vw;
+    margin-bottom: 17.5vw;
+    width: 60vw;
+  }
+  .logo {
+    width: 75vw;
+    height: 40vw;
+  }
+}
+
+.Copyrights {
+  text-align: center;
+  align-items: center;
+  margin: auto;
+}

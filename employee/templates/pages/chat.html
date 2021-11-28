@@ -1,0 +1,205 @@
+{% extends 'base.html'%}
+{% load static %}
+{% block title %} Messages {% endblock %}
+{% block content %}
+
+{% csrf_token %}
+   <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+   <link href="{% static 'chatstyle.css' %}" rel="stylesheet">
+<div class="container">
+
+    <!-- Page header start -->
+    
+    <!-- Page header end -->
+
+    <!-- Content wrapper start -->
+    <div class="content-wrapper">
+
+        <!-- Row start -->
+        <div class="row gutters">
+
+            <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+
+                <div class="card m-0">
+                
+                    <!-- Row start -->
+                    <div class="row no-gutters">
+                        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-3 col-3">
+                            <div class="users-container">
+                                <div class="fs-3 fw-bolder">&nbsp;&nbsp;&nbsp;&nbsp;Users</div>
+                                <ul class="users userscroll">
+								{% for user in users%}
+                                    <li class="person {{user.empid}}" data-chat="person1" onclick="changexy({{request.user.id}},{{user.empid}})">
+                                        <div class="user">
+                                            <img src="{% static 'profpic.jpg' %}" alt="Retail Admin">
+                                           
+                                        </div>
+                                        <p class="name-time">
+                                            <span class="name" id="name{{user.empid}}">{{user.firstname}} {{user.lastname}}</span>
+                                            
+                                        </p>
+                                    </li>
+                                {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-xl-8 col-lg-8 col-md-8 col-sm-9 col-9">
+                          
+                            <div class="selected-user">
+                             <span class="name" id="toname"></span></span>
+                            </div>
+                            <div class="chat-container">
+                                <ul class="chat-box chatContainerScroll" id="msgslist">
+                                    <!--<li class="chat-left">
+                                        <div class="chat-avatar">
+                                            <img src="https://www.bootdey.com/img/Content/avatar/avatar3.png" alt="Retail Admin">
+                                            <div class="chat-name">Russell</div>
+                                        </div>
+                                        <div class="chat-text">Hello, I'm Russell.
+                                            <br>How can I help you today?</div>
+                                        <div class="chat-hour">08:55 <span class="fa fa-check-circle"></span></div>
+                                    </li>
+                                    <li class="chat-right">
+                                        <div class="chat-hour">08:56 <span class="fa fa-check-circle"></span></div>
+                                        <div class="chat-text">Hi, Russell
+                                            <br> I need more information about Developer Plan.</div>
+                                        <div class="chat-avatar">
+                                            <img src="https://www.bootdey.com/img/Content/avatar/avatar3.png" alt="Retail Admin">
+                                            <div class="chat-name">Sam</div>
+                                        </div>
+                                    </li>
+                                 -->
+                                    
+                                </ul>
+
+                                <div class="form-group mt-3 mb-0" id="sendingform">
+                                    
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    <!-- Row end -->
+                </div>
+
+            </div>
+
+        </div>
+        <!-- Row end -->
+
+    </div>
+    <!-- Content wrapper end -->
+
+</div>
+
+
+{% endblock %}
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js"
+        integrity="sha512-Zq9o+E00xhhR/7vJ49mxFNJ0KQw1E1TMWkPTxrWcnpfEFDEXgUiwJHIKit93EW/XxE31HSI5GEOW06G6BF1AtA=="
+        crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+        integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js"
+        integrity="sha384-w1Q4orYjBQndcko6MimVbzY0tgp4pWB4lZ7lr30WKz0vr/aWKhXdBNmNb5D92v7s"
+        crossorigin="anonymous"></script>
+
+
+    <script>
+
+
+    var x=-1,y=-1,len=-1;
+    setInterval(rendermessage, 2000);
+    function changexy(a,b){
+        x=a;
+        y=b;
+        len=-1;
+        var xx = a.toString()+','+b.toString()
+        document.getElementById('sendingform').innerHTML=`<textarea class="form-control" rows="3" id="txtmsg" placeholder="Type your message here..."></textarea>
+                                    
+                                    <button onclick="sendmsg(`+ xx +`)" class="btn btn-success sendbtn" id="l{{teammember.team.teamid}}">Send Message</button>`
+        document.getElementById('msgslist').innerHTML='';
+
+        document.getElementById('toname').innerText= "To: " + document.getElementById('name'+b).innerText;
+        rendermessage()
+    }
+
+	function rendermessage(){
+
+        if(x==-1 && y==-1) return;
+        var req_data = {
+            x: x,
+            y: y,
+            flag: 1,
+        }
+         $.ajax({
+            url: "{% url 'chat' %}",
+            method: "GET",
+            data: req_data,
+
+            success: function (data, status, xhr) {
+              // document.getElementById('msgslist').innerHTML='';
+                for(var i=len+1;i<data.length;i++){
+                var time=data[i].Time.substr(0,10)+`<br>`+data[i].Time.substr(12,5);
+                    if(data[i].Sender_id==x){
+                        document.getElementById('msgslist').innerHTML+=`<li class="chat-right">
+                                        <div class="chat-hour">`+time+`</div>
+                                        <div class="chat-text txt">`+ data[i].Message + `</div>
+                                        <div class="chat-avatar">
+                                            <img src="{% static 'profpic.jpg' %}" alt="Retail Admin">
+                                        </div>
+                                    </li>`
+                    }
+                    else{
+                        document.getElementById('msgslist').innerHTML+=`<li class="chat-left">
+                                       <div class="chat-hour hrleft">`+time+`</div>
+                                        <div class="chat-text txt">`+ data[i].Message + `</div>
+                                        <div class="chat-avatar">
+                                            <img src="{% static 'profpic.jpg' %}" alt="Retail Admin">
+                                        </div>
+                                    </li>`
+                    }
+                }
+                
+                len=data.length-1;
+                
+            },
+            error: function (xhr, status, err) {
+               console.log("Error");
+            }
+        });
+        
+
+	}
+
+    function sendmsg(id,empid) {
+		var val = document.getElementById("txtmsg");
+        
+        var req_data = {
+            senderid: id,
+			receiverid: empid,
+			message: val.value,
+        }
+        if(req_data.message==""){
+            return false;
+        }
+        val.value='';
+    
+        $.ajax({
+            url: "{% url 'chat' %}",
+            method: "POST",
+            data: req_data,
+            success: function (data, status, xhr) {
+				rendermessage();
+            },
+            error: function (xhr, status, err) {
+               console.log(req_data);
+            }
+        });
+    }
+   
+    </script>
+{% endblock %}
+

@@ -1,0 +1,181 @@
+{% extends 'base.html' %} {% load static%} {% block title %} Leave Requests {% endblock %} {% block content %}
+<br />
+<div class="fs-1 fw-bolder">Leave Requests</div>
+<br />
+<table class="table">
+  <thead>
+    <tr class="table-secondary">
+      <th scope="col">Employee Name</th>
+      <th scope="col">Employee Id</th>
+      <th scope="col">Request Date</th>
+      <th scope="col">From</th>
+      <th scope="col">Till</th>
+      <th scope="col">Reason</th>
+      <th scope="col">Status</th>
+      <th scope="col">Approve</th>
+      <th scope="col">Reject</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for leave in leave_requests %} {% if leave.Status == 2 %}
+    <tr class="table-danger">
+      {% elif leave.Status == 1 %}
+    </tr>
+    <tr class="table-success">
+      {% else %}
+    </tr>
+    <tr class="table-warning">
+      {% endif %}
+
+      <th scope="row">{{leave.Sender.firstname}} {{leave.Sender.lastname}}</th>
+      <td>{{leave.Sender.empid}}</td>
+      <td>{{leave.date_applied}}</td>
+      <td>{{leave.date_from}}</td>
+      <td>{{leave.date_till}}</td>
+      <td>{{leave.reason}}</td>
+      <td>
+        {% if leave.Status == 2 %} Rejected {% elif leave.Status == 1 %}
+        Approved {% else %} Pending {% endif %}
+      </td>
+      <td>
+        {% if not leave.Status %}<button
+          onClick="approve_dialog(this.id)"
+          class="btn btn-success"
+          id="a{{leave.request_id}}"
+        >
+          Approve</button
+        >{% endif %}
+      </td>
+      <td>
+        {% if not leave.Status %}<button
+          onClick="reject_dialog(this.id)"
+          class="btn btn-danger"
+          id="r{{leave.request_id}}"
+        >
+          Reject</button
+        >{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="modal" id="confirm_approve" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Warning</h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>
+          Are you sure you want to approve the leave request with request id:
+          <span id="id_approved"></span>?
+        </p>
+      </div>
+      <div class="modal-footer">
+        {% csrf_token %}
+        <button
+          type="button"
+          class="btn btn-success"
+          id="btn-approve"
+          onclick="modify(0)"
+        >
+          Yes
+        </button>
+        <button type="button" class="btn btn-danger" data-dismiss="modal">
+          No
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="confirm_reject" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Warning</h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>
+          Are you sure you want to reject the leave request with request id:
+          <span id="id_rejected"></span>?
+        </p>
+      </div>
+      <div class="modal-footer">
+        {% csrf_token %}
+        <button
+          type="button"
+          class="btn btn-success"
+          id="btn-reject"
+          onclick="modify(1)"
+        >
+          Yes
+        </button>
+        <button type="button" class="btn btn-danger" data-dismiss="modal">
+          No
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %} {% block scripts %}
+
+<!--
+    Approve(id)
+    reject_dialog(id)
+-->
+
+<script>
+  function reject_dialog(id) {
+    id = Number(id.substr(1));
+    document.getElementById("id_rejected").innerText = id;
+    $("#confirm_reject").modal();
+  }
+  function approve_dialog(id) {
+    id = Number(id.substr(1));
+    document.getElementById("id_approved").innerText = id;
+    $("#confirm_approve").modal();
+  }
+  function modify(modify_type) {
+    var req_id;
+    if (modify_type)
+      req_id = Number(document.getElementById("id_rejected").innerText);
+    else req_id = Number(document.getElementById("id_approved").innerText);
+
+    var req_data = {
+      req_id: req_id,
+      modify_type: modify_type,
+    };
+
+    $.ajax({
+      url: "{% url 'leaves' %}",
+      method: "POST",
+      data: req_data,
+      success: function (data, status, xhr) {
+        window.location.reload();
+      },
+      error: function (xhr, status, err) {
+        window.location.reload();
+      },
+    });
+  }
+</script>
+{% endblock %}

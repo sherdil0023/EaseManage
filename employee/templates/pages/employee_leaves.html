@@ -1,0 +1,173 @@
+{% extends 'base.html' %} {% load static%} {% block title %} My Leave Requests
+{% endblock %} {% block content %} <br /><br />
+<button
+  type="button"
+  class="btn btn-success"
+  data-toggle="modal"
+  data-target="#exampleModal"
+>
+  Apply For A Leave
+</button>
+<br /><br />
+<div class="fs-1 fw-bolder">My Leave Requests</div>
+<br /><br />
+
+<table class="table">
+  <thead>
+    <tr class="table-secondary">
+      <th scope="col">Employee Name</th>
+      <th scope="col">Request Date</th>
+      <th scope="col">From</th>
+      <th scope="col">Till</th>
+      <th scope="col">Reason</th>
+      <th scope="col">Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for leave in leave_requests %} {% if leave.Status == 2 %}
+    <tr class="table-danger">
+      {% elif leave.Status == 1 %}
+    </tr>
+    <tr class="table-success">
+      {% else %}
+    </tr>
+    <tr class="table-warning">
+      {% endif %}
+
+      <th scope="row">{{leave.Sender.firstname}}</th>
+      <td>{{leave.date_applied}}</td>
+      <td>{{leave.date_from}}</td>
+      <td>{{leave.date_till}}</td>
+      <td>{{leave.reason}}</td>
+      <td>
+        {% if leave.Status == 2 %} Rejected {% elif leave.Status == 1 %}
+        Approved {% else %} Pending {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div
+  class="modal fade"
+  id="exampleModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="exampleModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Apply for a leave</h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form>
+          {% csrf_token %}
+          <div class="form-group">
+            From:
+            <input type="date" id="from_date" name="birthday" /><br /><br />
+            Till:
+            <input type="date" id="till_date" name="birthday" /><br /><br />
+            <div class="input-group">
+              <span class="input-group-text">Reason</span>
+              <textarea
+                class="form-control"
+                id="reason"
+                aria-label="With textarea"
+              ></textarea>
+            </div>
+          </div>
+          <button type="button" class="btn btn-danger" data-dismiss="modal">
+            Cancel Request
+          </button>
+          <button
+            type="button"
+            onclick="MakeLeaveRequest()"
+            class="btn btn-success"
+          >
+            Create Request
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  function MakeLeaveRequest() {
+    from_date = document.getElementById("from_date").value;
+    till_date = document.getElementById("till_date").value;
+    reason = document.getElementById("reason").value;
+
+    if (reason == "" || from_date == "" || till_date == "") {
+      alert("Please Enter All Fields ! !");
+      return false;
+    } else {
+      var today = new Date();
+      var yr1,
+        yr2,
+        mth1,
+        mth2,
+        d1,
+        d2,
+        yr3 = today.getYear(),
+        mth3 = today.getMonth(),
+        d3 = today.getDate();
+      yr1 = Number(from_date.substr(0, 4));
+      yr2 = Number(till_date.substr(0, 4));
+      mth1 = Number(from_date.substr(5, 2));
+      mth2 = Number(till_date.substr(5, 2));
+      d1 = Number(from_date.substr(8, 2));
+      d2 = Number(till_date.substr(8, 2));
+      if (yr1 > yr2) {
+        alert("From Date Must Be Before Till Date ! !");
+        return false;
+      } else if (mth1 > mth2) {
+        alert("From Date Must Be Before Till Date ! !");
+        return false;
+      } else if (d1 > d2) {
+        alert("From Date Must Be Before Till Date ! !");
+        return false;
+      }
+
+      if (yr3 > yr1) {
+        alert("From Date Must Be After Current Date ! !");
+        return false;
+      } else if (mth3 > mth1) {
+        alert("From Date Must Be After Current Date ! !");
+        return false;
+      } else if (d3 > d1) {
+        alert("From Date Must Be After Current Date ! !");
+        return false;
+      }
+    }
+
+    var req_data = {
+      from_date: document.getElementById("from_date").value,
+      till_date: document.getElementById("till_date").value,
+      reason: document.getElementById("reason").value,
+    };
+
+    $.ajax({
+      url: "{% url 'leaves' %}",
+      method: "POST",
+      data: req_data,
+      success: function (data, status, xhr) {
+        window.location.reload();
+      },
+      error: function (xhr, status, err) {
+        window.location.reload();
+      },
+    });
+  }
+</script>
+{% endblock %}
